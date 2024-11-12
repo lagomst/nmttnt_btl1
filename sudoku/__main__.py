@@ -1,11 +1,12 @@
 from sudoku import Board
+import numpy
 
 def main():
-    pattern = [5, 0, 3, 1, 0, 6, 4, 8, 0, 7, 9]
-    example_board = []
-    for i in range(1, 9, 1):
-        example_board.extend(pattern)
-    board = Board(3)
+    grid_size = 2
+    row_size = grid_size * 3
+    total_size = row_size * row_size
+    example_board = numpy.random.randint(0, 9, total_size)
+    board = Board(grid_size)
     board.importFixedBoard(example_board)
     board.display_board()
     board.display_fixed()
