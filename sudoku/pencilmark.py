@@ -19,40 +19,37 @@ class PencilMark:
         
         for cell in range(sudoku_size):
             init_val = self.board.get_val_by_pos(cell)
-            if init_val != 0:
+            if init_val != 0: # If cell is non-empty
                 pencil_mark[cell] = bit_manip.set_bit_to_one_at(0, init_val - 1) # Set flag bit to 1
                 continue
 
-            # Remove grid duplicates
+            # Eliminate values in grid
             grid = self.board.retrieve_grid_from_cell(cell)
+            grid_cells = self.board.retrieve_cells_in_grid(grid)
             offset = 0
-            for i in range(grid_size * grid_size):
-                cur_cell = grid + offset
+            for cur_cell in grid_cells:
                 val = self.board.get_val_by_pos(cur_cell)
                 if val != 0 and cur_cell != cell:
-                    pencil_mark[cell] = bit_manip.set_bit_to_zero_at(pencil_mark[cell], val - 1) # Set flag bit to 0
-                offset += 1
-                if offset % grid_size == 0:
-                    offset = offset - grid_size + row_size
+                    pencil_mark[cell] = bit_manip.set_bit_to_zero_at(pencil_mark[cell], val - 1) 
             
             r = self.board.retrieve_row_from_cell(cell)
             c = self.board.retrieve_col_from_cell(cell)
             
-            # Remove column duplicates
+            # Eliminate values in column
             for i in range(row_size):
                 if i == r: 
                     continue
                 val = self.board.get_val_by_coor(i, c)
-                if val==0:
+                if val == 0:
                     continue
                 pencil_mark[cell] = bit_manip.set_bit_to_zero_at(pencil_mark[cell], val - 1) # Set flag bit to 0
             
-            # Remove row duplicates
+            # Eliminate values in row 
             for i in range(row_size):
                 if i == c:
                     continue
                 val = self.board.get_val_by_coor(r, i)
-                if val==0:
+                if val == 0:
                     continue
                 pencil_mark[cell] &= bit_manip.set_bit_to_zero_at(pencil_mark[cell], val - 1) # Set flag bit to 0
         return pencil_mark
