@@ -8,7 +8,7 @@ class Sudoku_GA:
     
     candidates = {}
     
-    def __init__(self, population_size, best_selection_rate, random_selection_rate, nb_children, max_nb_generations,
+    def __init__(self, population_size, best_selection_rate, random_selection_rate, max_nb_generations,
                  mutation_rate, presolving, restart_after_n_generations_without_improvement,
                  grid_size, init_board):
         """
@@ -17,7 +17,6 @@ class Sudoku_GA:
         part of the next breeders
         :param random_selection_rate: (float) part of the population which is randomly selected to be part of the next
         breeders
-        :param nb_children: (int) how many children do we generate from 2 individuals
         :param max_nb_generations: (int) maximum number of generations to generate. If a solution is found before, it is
         displayed, otherwise the best solution (but not THE solution) is displayed
         :param mutation_rate: (float) part of the population that will go through mutation (avoid eugenics)
@@ -32,7 +31,6 @@ class Sudoku_GA:
         self.population_size = population_size
         self.best_selection_rate = best_selection_rate
         self.random_selection_rate = random_selection_rate
-        self.nb_children = nb_children
         self.max_nb_generations = max_nb_generations
         self.mutation_rate = mutation_rate
         self.presolving = presolving
@@ -113,7 +111,7 @@ class Sudoku_GA:
         if not found:
             print("Problem not solved after {} generations. Printing best and worst results below".
                   format(overall_nb_generations_done))
-            ranked_population = self.rank_population(new_population)
+            ranked_population = sorted(new_population, key=lambda board: board.fit)
             best_solution = ranked_population[0]
             worst_solution = ranked_population[-1]
             print("Best is:")
@@ -123,20 +121,19 @@ class Sudoku_GA:
 
         #graphics.draw_best_worst_fitness_scores(best_data, worst_data)
     
-    def selective_pick_from_population(self, sorted_population):
+    def selective_pick_from_population(self, sorted_population: list):
         picked_individual = []
         
-        number_of_best = int(len(sorted_population)) * self.best_selection_rate
-        number_of_random = int(len(sorted_population)) * self.random_selection_rate
+        number_of_best = int(len(sorted_population) * self.best_selection_rate)
+        number_of_random = int(len(sorted_population) * self.random_selection_rate)
         
         # Pick a number of best individual and a number of random individual
         for i in range(number_of_best):
             picked_individual.append(sorted_population[i])
         
         # Random individual might be a duplicate of one of the best
-        random_indexes = random.sample(sorted_population, k=number_of_random)
-        for index in random_indexes:
-            picked_individual.append(sorted_population[index])
+        random_picks = random.sample(sorted_population, k=number_of_random)
+        picked_individual.extend(random_picks)
         
         return picked_individual
     
@@ -154,34 +151,31 @@ class Sudoku_GA:
                 for cell in grid_cells:
                     child.values[cell] = father.values[cell]
                     if father.is_cell_fixed_at(cell):
-                        child.is_fixed &= (1 << cell) 
+                        child.is_fixed |= (1 << cell) 
             else: # Get mother gene
                 for cell in grid_cells:
                     child.values[cell] = mother.values[cell]
                     if mother.is_cell_fixed_at(cell):
-                        child.is_fixed &= (1 << cell)
+                        child.is_fixed |= (1 << cell)
             i += 1
         
         child.update_fit()
         return child
     
     def mutate_population(self, population):
-        mutated_population = []
         for individual in population:
             # For each individual, roll a value from 0 to 1 
             # and apply mutation to individual if below the mutation rate  
             roll = random.uniform(0, 1)
             if roll < self.mutation_rate:
-                individual = individual.swap_two_values()
-            mutated_population.append(individual)
-        return mutated_population
+                individual.swap_two_values()
+        return population
     
     def create_children_from_parents(self, breeders):
         new_population = []
         # Each pair of parents will create one child
         # To get n child, pick n pair of parents 
-        total_pair = int(len(breeders)//2) * self.nb_children
-        for i in range(total_pair):
+        for i in range(self.population_size):
             father = random.choice(breeders)
             mother = random.choice(breeders)
             new_population.append(self.create_child_from_parents(father, mother))

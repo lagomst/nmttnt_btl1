@@ -52,7 +52,7 @@ class Board:
         pass
 
     def is_cell_fixed_at(self, cell):
-        return self.is_fixed & (1 << cell) != 0
+        return (self.is_fixed & (1 << cell)) != 0
     
     def set_values_nofixed(self, new_values): # Fill new value without changing is_fixed  
         self.values = new_values

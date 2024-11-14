@@ -20,7 +20,7 @@ def read_from_file(filename):
     return grid_size, array
 
 def main():
-    filename="./sudoku/2x2.txt"
+    filename="./sudoku/3x3.txt"
     grid_size, example_board = read_from_file(filename)
     # row_size = grid_size * grid_size
     # total_size = row_size * row_size
@@ -30,17 +30,16 @@ def main():
     board = Board()
     board.import_fixed_board(grid_size, example_board)
     
-    population_size = 1000
-    best_selection_rate = 0.95
+    population_size = 2000
+    best_selection_rate = 0.85
     random_selection_rate = 0.05
-    nb_children = 1000
-    max_nb_generations = 50
+    max_nb_generations = 100
     mutation_rate = 0.01
     presolving = 0
-    restart_after_n_generations_without_improvment = 0
+    restart_after_n_generations_without_improvment = 40
     
     sudoku = Sudoku_GA(population_size, best_selection_rate, random_selection_rate,
-                      nb_children, max_nb_generations, mutation_rate,
+                      max_nb_generations, mutation_rate,
                       presolving, restart_after_n_generations_without_improvment, 
                       grid_size, board)
     
