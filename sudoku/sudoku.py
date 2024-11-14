@@ -12,20 +12,7 @@ class Sudoku_GA:
                  mutation_rate, presolving, restart_after_n_generations_without_improvement,
                  grid_size, init_board):
         """
-        :param population_size: (int) the whole population size to generate for each generation
-        :param selection_rate: (float) elitism parameter: rate of the best elements to keep from one generation to be
-        part of the next breeders
-        :param random_selection_rate: (float) part of the population which is randomly selected to be part of the next
-        breeders
-        :param max_nb_generations: (int) maximum number of generations to generate. If a solution is found before, it is
-        displayed, otherwise the best solution (but not THE solution) is displayed
-        :param mutation_rate: (float) part of the population that will go through mutation (avoid eugenics)
-        :param model_to_solve: (string) name of the .txt file which should be under 'samples' directory and contains the
-        objects problem to solve
-        :param presolving: (boolean) if True, we can help by pre-solving the puzzle with easy values to find using a
-        pencil mark approach
-        :param restart_after_n_generations_without_improvement: (int) if > 0, the program will automatically restart if
-        there is no improvement on fitness value for best element after this number of generations
+        
         """
         
         self.population_size = population_size
@@ -122,6 +109,10 @@ class Sudoku_GA:
         #graphics.draw_best_worst_fitness_scores(best_data, worst_data)
     
     def selective_pick_from_population(self, sorted_population: list):
+        """
+        Selectively picking individuals in population to become parents of the new one
+        """
+        
         picked_individual = []
         
         number_of_best = int(len(sorted_population) * self.best_selection_rate)

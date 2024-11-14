@@ -30,9 +30,9 @@ def main():
     board = Board()
     board.import_fixed_board(grid_size, example_board)
     
-    population_size = 2000
-    best_selection_rate = 0.85
-    random_selection_rate = 0.05
+    population_size = 1000
+    best_selection_rate = 0.05
+    random_selection_rate = 0.025
     max_nb_generations = 100
     mutation_rate = 0.01
     presolving = 0
