@@ -1,8 +1,5 @@
-import numpy
 import random
 from board import Board
-import rand_fill as rf
-import bitmanip as bit_manip
 
 class Sudoku_GA:
     
@@ -22,8 +19,13 @@ class Sudoku_GA:
         self.grid_size = grid_size
         self.init_board = init_board
 
-    def initialize_population(self):
+    def initialize_population(self, past_boards):
+        """
+        Initialize population by filling them randomly.  
+        Add boards generated in past runs if available.
+        """
         population = []
+        population.extend(past_boards)
         for n in range(self.population_size):
             new_candidate = Board()
             new_candidate.import_fixed_board(self.grid_size, self.init_board.values)
@@ -36,40 +38,45 @@ class Sudoku_GA:
         Start the GA to solve the objects
         """
 
-        # Keep a list of best and worst results
-        best_data = []
-        worst_data = []
+        # Keep a list of best and worst boards in past run
+        past_boards = []
         found = False
         overall_nb_generations_done = 0
         restart_counter = 0
 
         # We will restart the 
         while overall_nb_generations_done < self.max_nb_generations and not found:
-            new_population = self.initialize_population()
+            new_population = self.initialize_population(past_boards)
 
             nb_generations_done = 0
             last_best = 0
             nb_generations_without_improvement = 0
+            
+            bonus_mutation = 0 # Extra bonus for mutation when best score does not change over time
 
             # Loop until max allowed generations is reached or a solution is found
             while nb_generations_done < self.max_nb_generations and not found:
                 # Rank the solutions
                 ranked_population = sorted(new_population, key=lambda board: board.fit)
                 best_solution = ranked_population[0]
+                worst_solution = ranked_population[-1]
                 best_score = best_solution.get_fit()
-                worst_score = ranked_population[-1].get_fit()
-                best_data.append(best_score)
-                worst_data.append(worst_score)
+                worst_score = worst_solution.get_fit()
 
                 # Manage best value and improvements among new generations over time
                 if last_best == best_score:
                     nb_generations_without_improvement += 1
+                    # After every 1/10th of generations required for restart, mutation rate doubles
+                    bonus_mutation += self.mutation_rate / (self.restart_after_n_generations_without_improvement / 10) 
+                    
                 else:
                     last_best = best_score
                 if 0 < self.restart_after_n_generations_without_improvement < nb_generations_without_improvement:
                     print("No improvement since {} generations, restarting the program".
                           format(self.restart_after_n_generations_without_improvement))
                     restart_counter += 1
+                    # When restart, we keep the worst of current population
+                    past_boards.append(worst_solution)
                     break
 
                 # Check if problem is solved and print best and worst results
@@ -81,7 +88,7 @@ class Sudoku_GA:
                     next_breeders = self.selective_pick_from_population(ranked_population)
 
                     children = self.create_children_from_parents(next_breeders)
-                    new_population = self.mutate_population(children)
+                    new_population = self.mutate_population(children, bonus_mutation)
 
                     nb_generations_done += 1
                     overall_nb_generations_done += 1
@@ -92,6 +99,8 @@ class Sudoku_GA:
                     found = True
                     #print("It took {} to solve it".format(tools.get_human_readable_time(self._start_time, time())))
 
+            
+            
         if not found:
             print("Problem not solved after {} generations. Printing best and worst results below".
                   format(overall_nb_generations_done))
@@ -118,8 +127,11 @@ class Sudoku_GA:
             picked_individual.append(sorted_population[i])
         
         # Random individual might be a duplicate of one of the best
-        random_picks = random.sample(sorted_population, k=number_of_random)
-        picked_individual.extend(random_picks)
+        random_indexes = random.sample(range(number_of_best, len(sorted_population) - 1), k=number_of_random)
+        for i in random_indexes:
+            picked_individual.append(sorted_population[i]) 
+        #random_picks = random.sample(sorted_population, k=number_of_random)
+        #picked_individual.extend(random_picks)
         
         return picked_individual
     
@@ -155,12 +167,12 @@ class Sudoku_GA:
         child.update_fit()
         return child
     
-    def mutate_population(self, population):
+    def mutate_population(self, population, bonus_mutation):
         for individual in population:
             # For each individual, roll a value from 0 to 1 
             # and apply mutation to individual if below the mutation rate  
             roll = random.uniform(0, 1)
-            if roll < self.mutation_rate:
+            if roll - bonus_mutation < self.mutation_rate:
                 individual.swap_two_values()
         return population
     
