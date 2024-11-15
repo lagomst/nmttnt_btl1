@@ -9,18 +9,14 @@ class Sudoku_GA:
     candidates = {}
     
     def __init__(self, population_size, best_selection_rate, random_selection_rate, max_nb_generations,
-                 mutation_rate, presolving, restart_after_n_generations_without_improvement,
+                 mutation_rate, restart_after_n_generations_without_improvement,
                  grid_size, init_board):
-        """
-        
-        """
         
         self.population_size = population_size
         self.best_selection_rate = best_selection_rate
         self.random_selection_rate = random_selection_rate
         self.max_nb_generations = max_nb_generations
         self.mutation_rate = mutation_rate
-        self.presolving = presolving
         self.restart_after_n_generations_without_improvement = restart_after_n_generations_without_improvement
         
         self.grid_size = grid_size
@@ -39,14 +35,15 @@ class Sudoku_GA:
         """
         Start the GA to solve the objects
         """
-        #values_to_set = self._load().get_initial_values()
 
+        # Keep a list of best and worst results
         best_data = []
         worst_data = []
         found = False
         overall_nb_generations_done = 0
         restart_counter = 0
 
+        # We will restart the 
         while overall_nb_generations_done < self.max_nb_generations and not found:
             new_population = self.initialize_population()
 
@@ -105,8 +102,6 @@ class Sudoku_GA:
             best_solution.display_board()
             print("Worst is:")
             worst_solution.display_board()
-
-        #graphics.draw_best_worst_fitness_scores(best_data, worst_data)
     
     def selective_pick_from_population(self, sorted_population: list):
         """
@@ -129,8 +124,14 @@ class Sudoku_GA:
         return picked_individual
     
     def create_child_from_parents(self, father=Board, mother=Board):
+        """
+        Create a child by crossovering gene from both parent
+        """
         grids = father.retrieve_all_grid_id() # Retrieve from either parent is fine
         crossover_gene = []
+        # Create an array of child's gene which 
+        # would be inherited from either parent
+        # 0 is father's gene, 1 is mother's
         for i in range(int(len(grids))):
             crossover_gene.append(random.randint(0, 1))
             
@@ -138,12 +139,13 @@ class Sudoku_GA:
         i = 0
         for gene in crossover_gene:
             grid_cells = father.retrieve_cells_in_grid(grids[i]) # Retrieve from either parent is fine
-            if gene == 0: # Get father gene
+            if gene == 0: # Get father gene and copy father's grid
                 for cell in grid_cells:
                     child.values[cell] = father.values[cell]
+                    # Mark cell if it's fixed
                     if father.is_cell_fixed_at(cell):
-                        child.is_fixed |= (1 << cell) 
-            else: # Get mother gene
+                        child.is_fixed |= (1 << cell) #
+            else: # Get mother gene and copy father's grid
                 for cell in grid_cells:
                     child.values[cell] = mother.values[cell]
                     if mother.is_cell_fixed_at(cell):

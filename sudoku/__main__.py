@@ -1,9 +1,9 @@
 from board import Board
 from pencilmark import PencilMark
 from sudoku import Sudoku_GA
-import numpy
+import configparser
 
-def read_from_file(filename):
+def read_board_from_file(filename):
     """
     Read from file, return grid size as int and the board's values as an array
     """
@@ -20,27 +20,25 @@ def read_from_file(filename):
     return grid_size, array
 
 def main():
-    filename="./sudoku/3x3.txt"
-    grid_size, example_board = read_from_file(filename)
-    # row_size = grid_size * grid_size
-    # total_size = row_size * row_size
-    #example_board = numpy.random.randint(0, grid_size * grid_size + 1, total_size)
-    #example_board = [2, 1, 4, 0, 0, 0, 1, 2, 4, 0, 2, 1, 1, 2, 0, 0]
-    
+    board_filename="./sudoku/3x3.txt"
+    params_filename="./sudoku/params.txt"
+    grid_size, example_board = read_board_from_file(board_filename)
+   
     board = Board()
     board.import_fixed_board(grid_size, example_board)
-    
-    population_size = 1000
-    best_selection_rate = 0.05
-    random_selection_rate = 0.025
-    max_nb_generations = 100
-    mutation_rate = 0.01
-    presolving = 0
-    restart_after_n_generations_without_improvment = 40
+
+    # TODO: make .ini file and use config to set these values
+    # BTW, I find these values should be set as default
+    population_size=1000 # Total population size in each generations
+    best_selection_rate=0.05 # Percentage of population that has highest fit score to become parents of next generation
+    random_selection_rate=0.025 # Percentage of population that is randomly picked to become parents
+    max_nb_generations=100 # Max total ammount of generations allowed to run
+    mutation_rate=0.01 # Chance of an individual mutating
+    restart_after_n_generations_without_improvment=45 # Number of consecutive generation that do not improve before restarting
     
     sudoku = Sudoku_GA(population_size, best_selection_rate, random_selection_rate,
                       max_nb_generations, mutation_rate,
-                      presolving, restart_after_n_generations_without_improvment, 
+                      restart_after_n_generations_without_improvment, 
                       grid_size, board)
     
     sudoku.run()
