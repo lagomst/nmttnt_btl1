@@ -186,12 +186,20 @@ class Board:
         duplicates = 0
         # Each cell is checked twice: one for column and one for row 
         for n in range(row_size):
-            buckets = numpy.zeros(grid_size * grid_size + 1, dtype=int)
             # Check column duplicate
+            buckets = numpy.zeros(grid_size * grid_size + 1, dtype=int)
             for i in range(row_size):
                 val = self.get_val_by_coor(i, c)
                 buckets[val] += 1
+            # Tally duplicates from buckets
+            if buckets[0] > 0:
+                raise Exception("This board isn't filled up before grading fitness score!")
+            for digit in buckets:
+                if digit > 1: 
+                    duplicates += digit - 1 # A digit must appear no more than once per column/row           
+            
             # Check row duplicate
+            buckets = numpy.zeros(grid_size * grid_size + 1, dtype=int)
             for i in range(row_size):
                 val = self.get_val_by_coor(r, i)
                 buckets[val] += 1
@@ -199,9 +207,9 @@ class Board:
             if buckets[0] > 0:
                 raise Exception("This board isn't filled up before grading fitness score!")
             for digit in buckets:
-                if digit > 2: 
-                    duplicates += digit - 2 # A digit must appear no more than two times
-                                            # since we count number of times digit appears in both row and column
+                if digit > 1: 
+                    duplicates += digit - 1 # A digit must appear no more than once per column/row
+           
             # Increment to next row
             r += 1
             c += 1

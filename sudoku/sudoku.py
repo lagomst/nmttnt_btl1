@@ -6,7 +6,7 @@ class Sudoku_GA:
     candidates = {}
     
     def __init__(self, population_size, best_selection_rate, random_selection_rate, max_nb_generations,
-                 mutation_rate, restart_after_n_generations_without_improvement,
+                 mutation_rate, restart_after_n_generations_without_improvement, best_score_to_keep,
                  grid_size, init_board):
         
         self.population_size = population_size
@@ -15,6 +15,7 @@ class Sudoku_GA:
         self.max_nb_generations = max_nb_generations
         self.mutation_rate = mutation_rate
         self.restart_after_n_generations_without_improvement = restart_after_n_generations_without_improvement
+        self.best_score_to_keep = best_score_to_keep
         
         self.grid_size = grid_size
         self.init_board = init_board
@@ -55,7 +56,7 @@ class Sudoku_GA:
             bonus_mutation = 0 # Extra bonus for mutation when best score does not change over time
 
             # Loop until max allowed generations is reached or a solution is found
-            while nb_generations_done < self.max_nb_generations and not found:
+            while overall_nb_generations_done < self.max_nb_generations and not found:
                 # Rank the solutions
                 ranked_population = sorted(new_population, key=lambda board: board.fit)
                 best_solution = ranked_population[0]
@@ -66,7 +67,7 @@ class Sudoku_GA:
                 # Manage best value and improvements among new generations over time
                 if last_best == best_score:
                     nb_generations_without_improvement += 1
-                    # After every 1/10th of generations required for restart, mutation rate doubles
+                    # Add a bonus to mutation rate when best score does not change
                     bonus_mutation += self.mutation_rate / (self.restart_after_n_generations_without_improvement / 10) 
                     
                 else:
@@ -76,6 +77,9 @@ class Sudoku_GA:
                           format(self.restart_after_n_generations_without_improvement))
                     restart_counter += 1
                     # When restart, we keep the worst of current population
+                    # Only keep the best when its fit score are high enough 
+                    if best_score <= self.best_score_to_keep:
+                        past_boards.append(best_solution)
                     past_boards.append(worst_solution)
                     break
 
@@ -97,7 +101,6 @@ class Sudoku_GA:
                           format(nb_generations_done, overall_nb_generations_done))
                     best_solution.display_board()
                     found = True
-                    #print("It took {} to solve it".format(tools.get_human_readable_time(self._start_time, time())))
 
             
             
@@ -156,10 +159,11 @@ class Sudoku_GA:
                     child.values[cell] = father.values[cell]
                     # Mark cell if it's fixed
                     if father.is_cell_fixed_at(cell):
-                        child.is_fixed |= (1 << cell) #
+                        child.is_fixed |= (1 << cell) 
             else: # Get mother gene and copy father's grid
                 for cell in grid_cells:
                     child.values[cell] = mother.values[cell]
+                    # Mark cell if it's fixed
                     if mother.is_cell_fixed_at(cell):
                         child.is_fixed |= (1 << cell)
             i += 1
