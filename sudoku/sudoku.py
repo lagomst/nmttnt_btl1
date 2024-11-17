@@ -8,7 +8,16 @@ class Sudoku_GA:
     def __init__(self, population_size, best_selection_rate, random_selection_rate, max_nb_generations,
                  mutation_rate, restart_after_n_generations_without_improvement, best_score_to_keep,
                  grid_size, init_board):
-        
+        """
+        :params population_size: The population size for every generation
+        :params best_selection_rate: Proportion of highest-score population that is chosen to create new generations
+        :params random_selection_rate: Proportion of non-highest-score population that is chosen to ccreate new generations. 
+        :params max_nb_generations: Max number of generations allowed to run
+        :params mutation_rate: Chances for a child to mutate
+        :params restart_after_n_generations_without_improvement: Max number of generations without score improvement run before restarting. 
+        Will not be used if set at 0.
+        :params best_score_to_keep: Minimum fitness score to keep before  
+        """
         self.population_size = population_size
         self.best_selection_rate = best_selection_rate
         self.random_selection_rate = random_selection_rate
@@ -68,7 +77,12 @@ class Sudoku_GA:
                 if last_best == best_score:
                     nb_generations_without_improvement += 1
                     # Add a bonus to mutation rate when best score does not change
-                    bonus_mutation += self.mutation_rate / (self.restart_after_n_generations_without_improvement / 10) 
+                    if self.restart_after_n_generations_without_improvement > 0:
+                        bonus_mutation += (0.8 - self.mutation_rate) / self.restart_after_n_generations_without_improvement
+                    else:
+                        bonus_mutation += (0.8 - self.mutation_rate) / self.max_nb_generations
+                    if bonus_mutation > (0.8 - self.mutation_rate): 
+                        bonus_mutation = 0.8 - self.mutation_rate # Hard-cap on mutation bonus so it doesn't converge nowhere
                     
                 else:
                     last_best = best_score
@@ -76,8 +90,8 @@ class Sudoku_GA:
                     print("No improvement since {} generations, restarting the program".
                           format(self.restart_after_n_generations_without_improvement))
                     restart_counter += 1
-                    # When restart, we keep the worst of current population
-                    # Only keep the best when its fit score are high enough 
+                    # When restart, keep the worst of current population
+                    # Only keep the best when its fit score are good enough 
                     if best_score <= self.best_score_to_keep:
                         past_boards.append(best_solution)
                     past_boards.append(worst_solution)
@@ -185,7 +199,8 @@ class Sudoku_GA:
         # Each pair of parents will create one child
         # To get n child, pick n pair of parents 
         for i in range(self.population_size):
-            father = random.choice(breeders)
-            mother = random.choice(breeders)
+            pair = random.sample(breeders, 2)
+            father = pair[0]
+            mother = pair[1]
             new_population.append(self.create_child_from_parents(father, mother))
         return new_population

@@ -9,6 +9,11 @@ class Board:
     fit = None
 
     def __init__(self, grid_size=0):
+        """
+        :params grid_size: Length of a grid in
+        :params values: An array containing values for every cell. 0 means cell is empty
+        :params values: A bitmask determining if a cell is fixed from the beginning  
+        """
         self.grid_size = grid_size
         self.values = numpy.zeros(self.row_size() * self.row_size(), dtype=int)
         self.is_fixed = 0
@@ -168,16 +173,6 @@ class Board:
                 offset += self.row_size()
         return cells
     
-    def retrieve_non_fixed_random_cell(self):
-        sample_space = []
-        for cell in range(self.total_size()):
-            if self.is_cell_fixed_at(cell):
-                pass
-            else:
-                sample_space.append(cell)
-        
-        # Draw one random 
-    
     def update_fit(self):
         grid_size = self.grid_size
         row_size = self.row_size()
@@ -248,4 +243,3 @@ class Board:
         
         self.update_fit()
         return
-        

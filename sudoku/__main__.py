@@ -1,5 +1,4 @@
 from board import Board
-from pencilmark import PencilMark
 from sudoku import Sudoku_GA
 import configparser
 
@@ -19,35 +18,52 @@ def read_board_from_file(filename):
     
     return grid_size, array
 
+def load_params_from_config(filename):
+    """
+    Load parameters for the Genetic Algorithm from a config file
+    """
+    config = configparser.ConfigParser()
+    config.read(filename)
+    
+    # Read parameters from the GeneticAlgorithm section
+    params = config['GeneticAlgorithm']
+    return {
+        "population_size": int(params['population_size']),
+        "best_selection_rate": float(params['best_selection_rate']),
+        "random_selection_rate": float(params['random_selection_rate']),
+        "max_nb_generations": int(params['max_nb_generations']),
+        "mutation_rate": float(params['mutation_rate']),
+        "restart_after_n_generations_without_improvement": int(params['restart_after_n_generations_without_improvement']),
+        "best_score_to_keep": int(params['best_score_to_keep'])
+    }
+
 def main():
-    board_filename="./sudoku/3x3_hard2.txt"
-    params_filename="./sudoku/params.txt"
+    board_filename = "./sudoku/3x3_49.txt"
+    params_filename = "./sudoku/params.ini"
+
     grid_size, example_board = read_board_from_file(board_filename)
-   
+
+    # Load the Genetic Algorithm parameters from the config file
+    params = load_params_from_config(params_filename)
+
     board = Board()
     board.import_fixed_board(grid_size, example_board)
 
-    # TODO: make .ini file and use config to set these values
-    # BTW, I find these values should be set as default for 3x3 grid
-    population_size=3000 # Total population size in each generations
-    best_selection_rate=0.024 # Percentage of population that has highest fit score to become parents of next generation
-    random_selection_rate=0.011 # Percentage of population that is randomly picked to become parents
-    max_nb_generations=400 # Max total ammount of generations allowed to run
-    mutation_rate=0.035 # Chance of an individual mutating
-    
-    # Number of consecutive generation that do not improve before restarting
-    restart_after_n_generations_without_improvement= 80  
-    best_score_to_keep = 3 # Best score fitness to keep when restarting algorithm
-    
-    sudoku = Sudoku_GA(population_size, best_selection_rate, random_selection_rate,
-                      max_nb_generations, mutation_rate,
-                      restart_after_n_generations_without_improvement, best_score_to_keep,
-                      grid_size, board)
+    # Pass the parameters to the Sudoku_GA class
+    sudoku = Sudoku_GA(
+        params['population_size'],
+        params['best_selection_rate'],
+        params['random_selection_rate'],
+        params['max_nb_generations'],
+        params['mutation_rate'],
+        params['restart_after_n_generations_without_improvement'],
+        params['best_score_to_keep'],
+        grid_size,
+        board
+    )
     
     sudoku.run()
-    
     print("done")
-
+    
 if __name__ == '__main__':
     main()
-    
