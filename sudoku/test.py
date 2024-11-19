@@ -20,7 +20,7 @@ def read_board_from_file(filename):
     return grid_size, array
 
 def main():
-    board_filename="./sudoku/3x3_49.txt"
+    board_filename="./sudoku/3x3_45.txt"
     params_filename="./sudoku/params.txt"
     grid_size, example_board = read_board_from_file(board_filename)
    

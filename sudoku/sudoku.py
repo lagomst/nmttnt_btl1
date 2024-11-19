@@ -78,11 +78,11 @@ class Sudoku_GA:
                     nb_generations_without_improvement += 1
                     # Add a bonus to mutation rate when best score does not change
                     if self.restart_after_n_generations_without_improvement > 0:
-                        bonus_mutation += (0.8 - self.mutation_rate) / self.restart_after_n_generations_without_improvement
+                        bonus_mutation += (0.75 - self.mutation_rate) / self.restart_after_n_generations_without_improvement
                     else:
-                        bonus_mutation += (0.8 - self.mutation_rate) / self.max_nb_generations
-                    if bonus_mutation > (0.8 - self.mutation_rate): 
-                        bonus_mutation = 0.8 - self.mutation_rate # Hard-cap on mutation bonus so it doesn't converge nowhere
+                        bonus_mutation += (0.75 - self.mutation_rate) / self.max_nb_generations
+                    if bonus_mutation > (0.75 - self.mutation_rate): 
+                        bonus_mutation = 0.75 - self.mutation_rate # Hard-cap on mutation bonus so it doesn't converge nowhere
                     
                 else:
                     last_best = best_score
@@ -196,9 +196,11 @@ class Sudoku_GA:
     
     def create_children_from_parents(self, breeders):
         new_population = []
+        new_population.extend(breeders) # Add breeders to next population
         # Each pair of parents will create one child
-        # To get n child, pick n pair of parents 
-        for i in range(self.population_size):
+        # To get n child, pick n pair of parents
+        nb_children = self.population_size - int(len(breeders))
+        for i in range(nb_children):
             pair = random.sample(breeders, 2)
             father = pair[0]
             mother = pair[1]

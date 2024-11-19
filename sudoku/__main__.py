@@ -1,6 +1,7 @@
 from board import Board
 from sudoku import Sudoku_GA
 import configparser
+import sys
 
 def read_board_from_file(filename):
     """
@@ -38,8 +39,12 @@ def load_params_from_config(filename):
     }
 
 def main():
-    board_filename = "./sudoku/3x3_49.txt"
-    params_filename = "./sudoku/params.ini"
+    if len(sys.argv) < 2:
+        print("Usage: __main__.py <filename>")
+        return
+    
+    board_filename = sys.argv[1]
+    params_filename = "params.ini"
 
     grid_size, example_board = read_board_from_file(board_filename)
 
